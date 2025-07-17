@@ -17,7 +17,7 @@ let apiService = (function () {
         - (String) imageId
         - (String) author
         - (String) content
-        - (Date) date
+        - (Date) date /
   */
 
   // add an image to the gallery
