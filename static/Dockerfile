@@ -1,16 +1,22 @@
-# Build the Angular App
-# basically, this compiles the Angular project to static HTML and js files.
-FROM node:14-alpine3.14 as build
+#–– Stage 1: install dependencies ––
+FROM node:18-alpine AS builder
 WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm ci --silent
-COPY . ./
-RUN npm run build
 
-# Serve these static files with NGINX.
-FROM nginx:1.21.6-alpine
-COPY --from=build /app/dist/nanoblog /usr/share/nginx/html
+# copy only the manifest, install deps
+COPY package.json package-lock.json ./
+RUN npm ci --silent
+
+# copy your frontend code
+COPY . .
+
+#–– Stage 2: serve with nginx ––
+FROM nginx:stable-alpine
+# remove default html
+RUN rm -rf /usr/share/nginx/html/*
+
+# copy built/static files from builder
+COPY --from=builder /app /usr/share/nginx/html
+
+# expose and run
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
