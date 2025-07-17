@@ -1,0 +1,71 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'static/**'
+      - 'backend/**'
+
+jobs:
+  build-frontend:
+    uses: ./.github/workflows/build-frontend.yml
+    secrets:
+      CR_PAT: ${{ secrets.CR_PAT }}
+
+  build-backend:
+    needs: build-frontend
+    uses: ./.github/workflows/build-backend.yml
+    secrets:
+      CR_PAT: ${{ secrets.CR_PAT }}
+
+  deploy:
+    needs: [ build-frontend, build-backend ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Frontend & Backend via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key:      ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
+          # port: 22  # omit if using default
+          script: |
+            IMAGE_NAME=frontend-arinaazmi
+            # Construct the full registry path
+            IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
+            # Lowercase (required by GHCR)
+            IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+            # Derive version from the ref (tags → numeric, branches → latest)
+            VERSION=$(echo "${{ github.ref }}" | sed -E 's,.*/([^/]+)$,\1,')
+            [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=${VERSION#v}
+            [ "$VERSION" == "main" ] && VERSION=latest
+          
+            # Frontend
+            docker pull $IMAGE_ID:$VERSION
+            docker stop frontend || true && docker rm frontend || true
+            docker run -d \
+              --name frontend \
+              --restart unless-stopped \
+              -p 5000:80 \
+              $IMAGE_ID:$VERSION
+
+            IMAGE_NAME=backend-arinaazmi
+            # Construct the full registry path
+            IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
+            # Lowercase (required by GHCR)
+            IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+            # Derive version from the ref (tags → numeric, branches → latest)
+            VERSION=$(echo "${{ github.ref }}" | sed -E 's,.*/([^/]+)$,\1,')
+            [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=${VERSION#v}
+            [ "$VERSION" == "main" ] && VERSION=latest
+
+            # Backend
+            docker pull $IMAGE_ID:$VERSION
+            docker stop backend  || true && docker rm backend  || true
+            docker run -d \
+              --name backend \
+              --restart unless-stopped \
+              -p 3000:3000 \
+              $IMAGE_ID:$VERSION

@@ -1,0 +1,114 @@
+<head>
+  <title>Pics-a-Gram — Credits</title>
+  <link rel="stylesheet" href="styles/cols.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/gallery.css" />
+  <link rel="stylesheet" href="styles/comments.css" />
+  <link rel="stylesheet" href="styles/add-image-form.css" />
+  <link rel="stylesheet" href="styles/credits.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>Pics-a-Gram</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="credits.html" aria-current="page">Credits</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2>Credits</h2>
+
+    <section>
+      <h3>Third-Party Assets</h3>
+      <ul>
+        <li>Recycle-bin icon: <code>media/recycle-bin.png</code></li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Libraries &amp; Frameworks</h3>
+      <ul>
+        <li>
+          <code>cols.css</code> (12-column layout grid from lab)
+          :contentReference[oaicite:0]{index=0}
+        </li>
+        <li><code>meact.js</code> for lightweight state management</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>AI Assistance (GitHub Copilot)</h3>
+      <p>
+        All Copilot-generated code fragments below are preceded by the prompt
+        used to generate them, as required:
+      </p>
+      <ul>
+        <li>
+          <strong>Prompt:</strong> “How do I implement a duplicate-guard for
+          comments in JavaScript?”<br />
+          <em>Generated snippet:</em>
+          <pre><code>
+// if an existing comment has the same author & content, skip it
+const alreadyExists = image.comments.some(c =>
+  c.author === author && c.content === content
+);
+if (alreadyExists) return;
+          </code></pre>
+        </li>
+        <li>
+          <strong>Prompt:</strong> “How can I create a modal popup for my Add
+          Image form using CSS?”<br />
+          <em>Generated markup & styles:</em>
+          <pre><code>&lt;div class="modal hidden"&gt;
+  &lt;div class="modal-content"&gt;
+    &lt;button class="modal-close"&gt;×&lt;/button&gt;
+    &lt;!-- Add Image form fields here --&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+/* modal.css */
+.modal {
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.5); z-index: 1000;
+}
+.modal.hidden { display: none; }
+
+          </code></pre>
+        </li>
+        <li>
+          <strong>Prompt:</strong> “How do I add an icon to a button with
+          CSS?”<br />
+          <em>Generated CSS:</em>
+          <pre><code>.icon-btn {
+  background-image: url("../media/recycle-bin.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 1.25rem;
+}
+          </code></pre>
+        </li>
+        <li>
+          <strong>Prompt:</strong> “Give me a background gradient animation in
+          CSS.”<br />
+          <em>Generated keyframes:</em>
+          <pre><code>@keyframes gradientShift {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+body {
+  background: linear-gradient(120deg, #f6d365, #fda085, #f093fb, #6fa3ef);
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+          </code></pre>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="container">
+    <p>&copy; 2025 Pics-a-Gram</p>
+  </footer>
+</body>

@@ -1,0 +1,187 @@
+<header>
+  <link rel="stylesheet" href="styles/cols.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/gallery.css" />
+  <link rel="stylesheet" href="styles/comments.css" />
+  <link rel="stylesheet" href="styles/add-image-form.css" />
+  <h1>Pics-a-Gram</h1>
+
+  <button id="toggleSigninBtn" class="btn add-photo-btn">Sign In</button>
+  <button id="toggleSignupBtn" class="btn add-photo-btn">Sign Up</button>
+  <button id="toggleSignOutBtn" class="btn add-photo-btn">Sign Out</button>
+  <button id="toggleAddImageBtn" class="btn add-photo-btn">Add Image</button>
+</header>
+
+<body>
+  <!-- ADD IMAGE TOGGLE & FORM -->
+  <div class="row add-image-wrapper">
+    <div id="addImageModal" class="modal hidden">
+      <div class="modal-content">
+        <button id="closeModalBtn" class="modal-close">&times;</button>
+        <form id="addImageForm" class="add-image-form">
+          <h2>Add Image to Gallery</h2>
+          <label for="imageTitle">Image Title</label>
+          <input
+            id="imageTitle"
+            name="imageTitle"
+            type="text"
+            placeholder="Enter title"
+            required
+          />
+
+          <label for="imageFile">Image File</label>
+          <input id="imageFile" name="imageFile" type="file" accept="image/*" />
+
+          <button type="submit" class="btn submit-btn">Add to Gallery</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGN UP MODAL -->
+  <div class="row add-image-wrapper">
+    <div id="signUpModal" class="modal hidden">
+      <div class="modal-content">
+        <button id="closeSignUpModalBtn" class="modal-close">&times;</button>
+        <form id="signUpForm" class="add-image-form">
+          <h2>Sign up</h2>
+          <label for="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="Enter username"
+            required
+          />
+
+          <label for="signUpPassword">password</label>
+          <input
+            id="signUpPassword"
+            name="password"
+            type="text"
+            placeholder="Enter password"
+            required
+          />
+
+          <button type="submit" class="btn submit-btn">Sign up</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGN IN MODAL -->
+  <div class="row add-image-wrapper">
+    <div id="signInModal" class="modal hidden">
+      <div class="modal-content">
+        <button id="closeSignInModalBtn" class="modal-close">&times;</button>
+        <form id="signInForm" class="add-image-form">
+          <h2>Sign In</h2>
+          <label for="signInUsername">Username</label>
+          <input
+            id="signInUsername"
+            name="username"
+            type="text"
+            placeholder="Enter username"
+            required
+          />
+
+          <label for="signInPassword">password</label>
+          <input
+            id="signInPassword"
+            name="password"
+            type="text"
+            placeholder="Enter password"
+            required
+          />
+
+          <button type="submit" class="btn submit-btn">Sign in</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <main>
+    <div>
+      <h1 class="gallery-title">Pics-a-Gram Gallery</h1>
+      <div class="row gallery-pagination">
+        <div class="col-4">
+          <button id="prevGBtn" class="btn">Previous</button>
+        </div>
+        <div class="col-4">
+          <span id="galleryCounter">0 of 0</span>
+        </div>
+        <div class="col-4">
+          <button id="nextGBtn" class="btn">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- empty-state message -->
+    <div id="emptyMessage" class="empty-message hidden">
+      This user's gallery is empty :(
+    </div>
+
+    <!-- ————————— MAIN WRAPPER ————————— -->
+    <button id="deleteBtn" class="btn delete-btn">Delete</button>
+
+    <div class="row main-gallery" id="mainGallery">
+      <!-- LEFT COLUMN: Image + Comment Form -->
+      <section class="col-6 col-sm-6 left-panel">
+        <div class="viewer-box">
+          <div class="viewer-info">
+            <h2 class="viewer-title"></h2>
+            <p class="viewer-author"></p>
+          </div>
+          <div class="viewer-image">
+            <img src="" alt="" class="viewer-img" />
+          </div>
+          <div class="comment-box" id="commentBox">
+            <h3>Add a Comment</h3>
+            <form class="comment-form" id="commentForm">
+              <textarea
+                id="commentInput"
+                class="comment-form-textarea"
+                placeholder="Add a comment, be nice!"
+                rows="3"
+                required
+              ></textarea>
+              <button type="submit" class="btn submit-btn">Submit</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Comments Panel -->
+      <aside class="col-6 col-sm-6 right-panel">
+        <h3 class="comments-panel-header">Comments</h3>
+        <ul class="comments-list"></ul>
+
+        <nav class="comments-nav">
+          <button id="prevCommentsBtn" class="btn" hidden>‹ Newer</button>
+          <span id="commentsCounter" hidden>0 of 0 </span>
+          <button id="nextCommentsBtn" class="btn" hidden>Older ›</button>
+        </nav>
+      </aside>
+    </div>
+
+    <!-- ————————— DELETE & PAGINATION ————————— -->
+    <div class="row gallery-pagination">
+      <div class="col-4">
+        <button id="prevBtn" class="btn">Previous</button>
+      </div>
+      <div class="col-4">
+        <span id="imageCounter">0 of 0</span>
+      </div>
+      <div class="col-4">
+        <button id="nextBtn" class="btn">Next</button>
+      </div>
+    </div>
+  </main>
+  <script src="js/meact.js"></script>
+  <script src="js/api-service.js"></script>
+  <script src="js/controller.js"></script>
+</body>
+
+<footer>
+  <a href="./credits.html">Credits</a>
+  <p>&copy; 2025 My Web Page</p>
+</footer>

@@ -1,0 +1,58 @@
+name: Publish Backend to GHCR
+
+on:
+  workflow_call: 
+    secrets:
+      CR_PAT:
+        required: true
+  push:
+    # Only run on commits to main
+    branches:
+      - main
+    # Only run if files under backend/ change
+    paths:
+      - backend/**
+
+env:
+  IMAGE_NAME: backend-arinaazmi
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: |
+          docker build . \
+            --file Dockerfile \
+            --tag $IMAGE_NAME
+
+      - name: Log into GitHub Container Registry
+        # Make sure you’ve added a PAT with read:packages, write:packages as secret CR_PAT
+        run: |
+          echo "${{ secrets.CR_PAT }}" \
+            | docker login ghcr.io \
+                -u ${{ github.actor }} \
+                --password-stdin
+
+      - name: Push image to GHCR
+        run: |
+          # Construct the full registry path
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
+          # Lowercase (required by GHCR)
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Derive version from the ref (tags → numeric, branches → latest)
+          VERSION=$(echo "${{ github.ref }}" | sed -E 's,.*/([^/]+)$,\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=${VERSION#v}
+          [ "$VERSION" == "main" ] && VERSION=latest
+
+          echo "Pushing $IMAGE_ID:$VERSION"
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION

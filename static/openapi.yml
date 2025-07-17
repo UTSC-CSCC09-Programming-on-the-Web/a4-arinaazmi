@@ -1,0 +1,659 @@
+#
+# This OpenAPI 3.0 specification was generated using the following prompt:
+#
+# "Generate an OpenAPI 3.0 YAML specification for the Express.js image, comment, user and gallery endpoints"
+#
+openapi: 3.0.3
+info:
+  title: Image Service API
+  version: 1.0.0
+  description: >
+    RESTful Web API for managing images, comments, users and galleries.
+servers:
+  - url: /api
+
+tags:
+  - name: Images
+    description: Operations on image resources
+  - name: Comments
+    description: Operations on image comments
+  - name: Users
+    description: Operations on user accounts and authentication
+  - name: Galleries
+    description: Operations on user galleries
+
+paths:
+  /images:
+    get:
+      tags: [Images]
+      summary: List images (paginated by cursor)
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of images to return per page
+        - in: query
+          name: cursor
+          schema:
+            type: integer
+          description: Return images with IDs ≤ cursor (older)
+      responses:
+        "200":
+          description: A page of images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  images:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Image"
+                  prevCursor:
+                    type: integer
+                    nullable: true
+                  nextCursor:
+                    type: integer
+                    nullable: true
+    post:
+      tags: [Images]
+      summary: Upload a new image
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, imageFile]
+              properties:
+                title:
+                  type: string
+                imageFile:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: The created image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Image"
+        "400":
+          description: Missing file, title, or authentication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /images/{id}:
+    get:
+      tags: [Images]
+      summary: Get image metadata by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Image metadata with uploader info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageWithUser"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: [Images]
+      summary: Delete an image by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deletion success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "403":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /images/{id}/file:
+    get:
+      tags: [Images]
+      summary: Download image file
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Binary image file
+          content:
+            application/octet-stream: {}
+        "404":
+          description: Image or file not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /images/{id}/comments:
+    get:
+      tags: [Comments]
+      summary: Get comments for an image (paginated)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: A page of comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+                  comments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CommentWithUser"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [Comments]
+      summary: Add a comment to an image
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+      responses:
+        "201":
+          description: The created comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: Missing content or authentication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /images/{id}/comments/count:
+    get:
+      tags: [Comments]
+      summary: Get count of comments for an image
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Comment count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+
+  /images/comments/{commentId}:
+    delete:
+      tags: [Comments]
+      summary: Delete a comment by ID (via images router)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deletion success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "403":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Comment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /comments/{commentId}:
+    delete:
+      tags: [Comments]
+      summary: Delete a comment by ID (via comments router)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deletion success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "403":
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Comment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/signup:
+    post:
+      tags: [Users]
+      summary: Create a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Registered user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "422":
+          description: User creation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/signin:
+    post:
+      tags: [Users]
+      summary: Authenticate a user and issue token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Authenticated user with token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Incorrect credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/signout:
+    get:
+      tags: [Users]
+      summary: Sign out current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current authenticated user ID
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /galleries:
+    get:
+      tags: [Galleries]
+      summary: List galleries (users with images)
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: cursor
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A page of user galleries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas.UserGallery"
+                  prevCursor:
+                    type: integer
+                    nullable: true
+                  nextCursor:
+                    type: integer
+                    nullable: true
+
+  /galleries/count:
+    get:
+      tags: [Galleries]
+      summary: Count galleries
+      responses:
+        "200":
+          description: Total number of galleries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+
+  /galleries/{id}/images:
+    get:
+      tags: [Galleries]
+      summary: List images in a gallery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: cursor
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A page of images in the gallery
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  images:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Image"
+                  prevCursor:
+                    type: integer
+                    nullable: true
+                  nextCursor:
+                    type: integer
+                    nullable: true
+
+  /galleries/{id}/images/count:
+    get:
+      tags: [Galleries]
+      summary: Count images in a gallery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Image count in the gallery
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Image:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        filePath:
+          type: string
+        userId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ImageWithUser:
+      allOf:
+        - $ref: "#/components/schemas/Image"
+        - type: object
+          properties:
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                username:
+                  type: string
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        imageId:
+          type: integer
+        userId:
+          type: integer
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CommentWithUser:
+      allOf:
+        - $ref: "#/components/schemas/Comment"
+        - type: object
+          properties:
+            user:
+              type: object
+              properties:
+                username:
+                  type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        token:
+          type: string
+        token_expiry:
+          type: string
+          format: date-time
+    UserGallery:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/Image"
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas.Comment"
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
